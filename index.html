@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Penjualan - Dashboard Aktif</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --info-color: #36b9cc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fc;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 20rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-lunas { background-color: var(--success-color); color: white; }
+        .status-pending { background-color: var(--warning-color); color: black; }
+        .status-overdue { background-color: var(--danger-color); color: white; }
+
+        .metric-card {
+            border-left: 0.25rem solid;
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .border-left-primary { border-left-color: var(--primary-color); }
+        .border-left-success { border-left-color: var(--success-color); }
+        .border-left-warning { border-left-color: var(--warning-color); }
+        .border-left-info { border-left-color: var(--info-color); }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar d-flex flex-column p-3 text-white" style="width: 250px;">
+            <h4 class="text-center mb-4"><i class="fas fa-store"></i> Sales System</h4>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="input-data">
+                        <i class="fas fa-plus-circle me-2"></i>Input Data
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="upload-excel">
+                        <i class="fas fa-file-excel me-2"></i>Upload Excel
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="purchase-process">
+                        <i class="fas fa-shipping-fast me-2"></i>Proses Pembelian
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="budget">
+                        <i class="fas fa-money-bill-wave me-2"></i>Anggaran
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="invoice">
+                        <i class="fas fa-file-invoice me-2"></i>Invoice
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="analytics">
+                        <i class="fas fa-chart-line me-2"></i>Analisis
+                    </a>
+                </li>
+            </ul>
+            <hr>
+            <button class="btn btn-danger w-100" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-grow-1 p-4">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section active">
+                <h2 class="mb-4">Dashboard Penjualan</h2>
+                
+                <!-- Metrics Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card metric-card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Total Penjualan</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-sales">Rp 0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card metric-card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Total Margin</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-margin">Rp 0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card metric-card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Piutang</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-receivables">Rp 0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card metric-card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Total Transaksi</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-transactions">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Grafik Penjualan</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="salesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Status Pembayaran</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="paymentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Transaksi Terbaru</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="recent-transactions-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Tanggal</th>
+                                                <th>Konsumen</th>
+                                                <th>Produk</th>
+                                                <th>Jumlah</th>
+                                                <th>Total</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recent-transactions">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Data Section -->
+            <div id="input-data-section" class="content-section">
+                <h2>Input Data Penjualan</h2>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <form id="sales-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nama Konsumen</label>
+                                        <input type="text" class="form-control" id="consumer-name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nama Produk</label>
+                                        <input type="text" class="form-control" id="product-name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Alamat Pengiriman</label>
+                                        <textarea class="form-control" id="delivery-address" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Jenis Pengiriman</label>
+                                        <select class="form-select" id="delivery-type" required>
+                                            <option value="">Pilih Jenis</option>
+                                            <option value="Franco">Franco (Dikirim)</option>
+                                            <option value="FOT">FOT (Diambil Sendiri)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Harga Jual (Rp)</label>
+                                        <input type="number" class="form-control" id="selling-price" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Harga Beli (Rp)</label>
+                                        <input type="number" class="form-control" id="purchase-price" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Jumlah (Ton/Kg)</label>
+                                        <input type="number" class="form-control" id="quantity" step="0.01" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Satuan</label>
+                                        <select class="form-select" id="unit" required>
+                                            <option value="Ton">Ton</option>
+                                            <option value="Kg">Kg</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nomor PO</label>
+                                        <input type="text" class="form-control" id="product-name" required>
+                                    </div class="mb-3">
+                                        <label class="form-label">Tanggal PO</label>
+                                        <input type="date" class="form-control" id="delivery-date" required>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tanggal Kirim</label>
+                                        <input type="date" class="form-control" id="delivery-date" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Biaya Operasional (Rp)</label>
+                                        <input type="number" class="form-control" id="operational-cost" value="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Jenis Pembayaran</label>
+                                        <select class="form-select" id="payment-type" required>
+                                            <option value="Tunai">Tunai</option>
+                                            <option value="Kredit">Kredit</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Jatuh Tempo</label>
+                                        <input type="date" class="form-control" id="due-date">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Simpan Data</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other sections would be similar -->
+            <div id="upload-excel-section" class="content-section">
+                <h2>Upload Excel</h2>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <input type="file" class="form-control" id="excel-upload" accept=".xlsx,.xls">
+                    </div>
+                </div>
+            </div>
+
+            <div id="purchase-process-section" class="content-section">
+                <h2>Proses Pembelian</h2>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Konsumen</th>
+                                    <th>Produk</th>
+                                    <th>Status</th>
+                                    <th>Lokasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchase-process-list">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="budget-section" class="content-section">
+                <h2>Anggaran Keuangan</h2>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th>Status</th>
+                                    <th>Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="budget-list">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="invoice-section" class="content-section">
+                <h2>Invoice</h2>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>No Invoice</th>
+                                    <th>Konsumen</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoice-list">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analytics-section" class="content-section">
+                <h2>Analisis Penjualan</h2>
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div id="sales-analytics"></div>
+                        <div id="product-analytics"></div>
+                        <div id="customer-analytics"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Complete Sales Management System
+        class SalesManagementSystem {
+            constructor() {
+                this.salesData = JSON.parse(localStorage.getItem('salesData')) || [];
+                this.currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadDashboard();
+                this.initializeCharts();
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('[data-section]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = e.target.getAttribute('data-section');
+                        this.showSection(section);
+                    });
+                });
+
+                // Form submission
+                document.getElementById('sales-form')?.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSalesData();
+                });
+
+                // Excel upload
+                document.getElementById('excel-upload')?.addEventListener('change', (e) => {
+                    this.handleExcelUpload(e);
+                });
+            }
+
+            showSection(sectionName) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(`${sectionName}-section`).classList.add('active');
+
+                document.querySelectorAll('[data-section]').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+                this.loadSectionData(sectionName);
+            }
+
+            loadSectionData(sectionName) {
+                switch(sectionName) {
+                    case 'dashboard':
+                        this.loadDashboard();
+                        break;
+                    case 'input-data':
+                        this.loadInputData();
+                        break;
+                    case 'upload-excel':
+                        this.loadUploadExcel();
+                        break;
+                    case 'purchase-process':
+                        this.loadPurchaseProcess();
+                        break;
+                    case 'budget':
+                        this.loadBudget();
+                        break;
+                    case 'invoice':
+                        this.loadInvoice();
+                        break;
+                    case 'analytics':
+                        this.loadAnalytics();
+                        break;
+                }
+            }
+
+            loadDashboard() {
+                this.updateDashboardMetrics();
+                this.renderSalesChart();
+                this.renderPaymentChart();
+                this.renderRecentTransactions();
+            }
+
+            updateDashboardMetrics() {
+                const totalSales = this.salesData.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0);
+                const totalMargin = this.salesData.reduce((sum, item) => sum + item.margin, 0);
+                const totalTransactions = this.salesData.length;
+                const totalReceivables = this.salesData.filter(item => item.status === 'pending')
+                    .reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0);
+
+                document.getElementById('total-sales').textContent = `Rp ${totalSales.toLocaleString()}`;
+                document.getElementById('total-margin').textContent = `Rp ${totalMargin.toLocaleString()}`;
+                document.getElementById('total-receivables').textContent = `Rp ${totalReceivables.toLocaleString()}`;
+                document.getElementById('total-transactions').textContent = totalTransactions;
+            }
+
+            renderSalesChart() {
+                const ctx = document.getElementById('salesChart');
+                if (!ctx) return;
+
+                const monthlyData = this.getMonthlyData();
+                const labels = Object.keys(monthlyData);
+                const data = Object.values(monthlyData);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Penjualan (Rp)',
+                            data: data,
+                            borderColor: '#4e73df',
+                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp ' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderPaymentChart() {
+                const ctx = document.getElementById('paymentChart');
+                if (!ctx) return;
+
+                const paid = this.salesData.filter(item => item.status === 'paid').length;
+                const pending = this.salesData.filter(item => item.status === 'pending').length;
+                const overdue = this.salesData.filter(item => item.status === 'overdue').length;
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Lunas', 'Belum Lunas', 'Jatuh Tempo'],
+                        datasets: [{
+                            data: [paid, pending, overdue],
+                            backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            renderRecentTransactions() {
+                const container = document.getElementById('recent-transactions');
+                if (!container) return;
+
+                const recentTransactions = this.salesData.slice(-5).reverse();
+                
+                container.innerHTML = recentTransactions.map(item => `
+                    <tr>
+                        <td>${new Date(item.poDate).toLocaleDateString('id-ID')}</td>
+                        <td>${item.consumerName}</td>
+                        <td>${item.productName}</td>
+                        <td>${item.quantity} ${item.unit}</td>
+                        <td>Rp ${(item.sellingPrice * item.quantity).toLocaleString()}</td>
+                        <td>
+                            <span class="status-badge status-${item.status}">
+                                ${item.status === 'paid' ? 'Lunas' : 
+                                  item.status === 'pending' ? 'Belum Lunas' : 'Jatuh Tempo'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            getMonthlyData() {
+                const months = {};
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+                
+                this.salesData.forEach(item => {
+                    const date = new Date(item.poDate);
+                    const monthKey = monthNames[date.getMonth()];
+                    if (!months[monthKey]) {
+                        months[monthKey] = 0;
+                    }
+                    months[monthKey] += (item.sellingPrice * item.quantity);
+                });
+                
+                return months;
+            }
+
+            saveSalesData() {
+                const formData = {
+                    id: Date.now(),
+                    consumerName: document.getElementById('consumer-name').value,
+                    productName: document.getElementById('product-name').value,
+                    deliveryAddress: document.getElementById('delivery-address').value,
+                    deliveryType: document.getElementById('delivery-type').value,
+                    sellingPrice: parseFloat(document.getElementById('selling-price').value),
+                    purchasePrice: parseFloat(document.getElementById('purchase-price').value),
+                    quantity: parseFloat(document.getElementById('quantity').value),
+                    unit: document.getElementById('unit').value,
+                    poDate: document.getElementById('po-date').value,
+                    deliveryDate: document.getElementById('delivery-date').value,
+                    operationalCost: parseFloat(document.getElementById('operational-cost').value) || 0,
+                    paymentType: document.getElementById('payment-type').value,
+                    dueDate: document.getElementById('due-date').value,
+                    status: 'pending',
+                    margin: 0,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Calculate margin
+                formData.margin = (formData.sellingPrice - formData.purchasePrice - formData.operationalCost) * formData.quantity;
+
+                this.salesData.push(formData);
+                localStorage.setItem('salesData', JSON.stringify(this.salesData));
+
+                alert('Data berhasil disimpan!');
+                document.getElementById('sales-form').reset();
+                this.loadDashboard();
+            }
+
+            handleExcelUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Simulate Excel processing
+                alert('Fitur upload Excel akan segera aktif!');
+            }
+
+            loadInputData() {
+                // Set today's date as default
+                document.getElementById('po-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('delivery-date').value = new Date().toISOString().split('T')[0];
+            }
+
+            loadPurchaseProcess() {
+                const container = document.getElementById('purchase-process-list');
+                if (!container) return;
+
+                container.innerHTML = this.salesData.map(item => `
+                    <tr>
+                        <td>${item.consumerName}</td>
+                        <td>${item.productName}</td>
+                        <td><span class="status-badge status-pending">Dalam Proses</span></td>
+                        <td>Gudang Utama</td>
+                    </tr>
+                `).join('');
+            }
+
+            loadBudget() {
+                const container = document.getElementById('budget-list');
+                if (!container) return;
+
+                const budgets = [
+                    { description: 'Pengajuan Anggaran Q1 2024', amount: 50000000, status: 'Sudah', date: '2024-01-15' },
+                    { description: 'Pengajuan Anggaran Q2 2024', amount: 75000000, status: 'Belum', date: '2024-04-01' }
+                ];
+
+                container.innerHTML = budgets.map(budget => `
+                    <tr>
+                        <td>${budget.description}</td>
+                        <td>Rp ${budget.amount.toLocaleString()}</td>
+                        <td><span class="status-badge status-${budget.status === 'Sudah' ? 'lunas' : 'pending'}">${budget.status}</span></td>
+                        <td>${budget.date}</td>
+                    </tr>
+                `).join('');
+            }
+
+            loadInvoice() {
+                const container = document.getElementById('invoice-list');
+                if (!container) return;
+
+                container.innerHTML = this.salesData.map(item => `
+                    <tr>
+                        <td>INV-${item.id}</td>
+                        <td>${item.consumerName}</td>
+                        <td>Rp ${(item.sellingPrice * item.quantity).toLocaleString()}</td>
+                        <td><span class="status-badge status-${item.status}">${this.getStatusText(item.status)}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            loadAnalytics() {
+                const salesContainer = document.getElementById('sales-analytics');
+                if (salesContainer) {
+                    salesContainer.innerHTML = `
+                        <h5>Ringkasan Penjualan</h5>
+                        <p>Total Transaksi: ${this.salesData.length}</p>
+                        <p>Total Penjualan: Rp ${this.salesData.reduce((sum, item) => sum + (item.sellingPrice * item.quantity), 0).toLocaleString()}</p>
+                    `;
+                }
+            }
+
+            getStatusText(status) {
+                switch(status) {
+                    case 'paid': return 'Lunas';
+                    case 'pending': return 'Belum Lunas';
+                    case 'overdue': return 'Jatuh Tempo';
+                    default: return status;
+                }
+            }
+
+            logout() {
+                localStorage.removeItem('currentUser');
+                alert('Anda telah logout');
+            }
+        }
+
+        // Initialize the application
+        const app = new SalesManagementSystem();
+
+        // Add sample data for demo
+        if (app.salesData.length === 0) {
+            app.salesData = [
+                {
+                    id: 1,
+                    consumerName: 'PT Maju Sejahtera',
+                    productName: 'Batu Bara',
+                    sellingPrice: 1200000,
+                    purchasePrice: 1000000,
+                    quantity: 10,
+                    unit: 'Ton',
+                    poDate: '2024-01-15',
+                    deliveryDate: '2024-01-20',
+                    operationalCost: 5000000,
+                    status: 'paid',
+                    margin: 15000000
+                },
+                {
+                    id: 2,
+                    consumerName: 'CV Sumber Jaya',
+                    productName: 'Batu Bara',
+                    sellingPrice: 1100000,
+                    purchasePrice: 950000,
+                    quantity: 15,
+                    unit: 'Ton',
+                    poDate: '2024-01-20',
+                    deliveryDate: '2024-01-25',
+                    operationalCost: 7500000,
+                    status: 'pending',
+                    margin: 17250000
+                }
+            ];
+            localStorage.setItem('salesData', JSON.stringify(app.salesData));
+            app.loadDashboard();
+        }
+    </script>
+</body>
+</html>
